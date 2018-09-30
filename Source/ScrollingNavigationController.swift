@@ -248,7 +248,7 @@ open class ScrollingNavigationController: UINavigationController, UIGestureRecog
     guard let _ = self.scrollableView, let visibleViewController = self.visibleViewController else { return }
 
     guard state == .collapsed else {
-      updateNavbarAlpha()
+      updateNavbarAlphaOnShow()
       return
     }
 
@@ -546,13 +546,25 @@ open class ScrollingNavigationController: UINavigationController, UIGestureRecog
     }, completion: nil)
   }
 
-  private func updateNavbarAlpha() {
-    guard let navigationItem = topViewController?.navigationItem else { return }
-
+  private func updateNavbarAlphaOnShow() {
     let frame = navigationBar.frame
 
+    let percentage = frame.origin.y / (-navbarFullHeight - statusBarHeight)
+    
+    let alpha = 1 - percentage
+    
+    updateWithAlpha(alpha: alpha)
+  }
+  
+  private func updateNavbarAlpha() {
     // Change the alpha channel of every item on the navbr
     let alpha = 1 - percentage
+
+    updateWithAlpha(alpha: alpha)
+  }
+  
+  func updateWithAlpha(alpha: CGFloat) {
+    guard let navigationItem = topViewController?.navigationItem else { return }
 
     // Hide all the possible titles
     navigationItem.titleView?.alpha = alpha
@@ -566,7 +578,7 @@ open class ScrollingNavigationController: UINavigationController, UIGestureRecog
     } else {
       navigationBar.titleTextAttributes?[NSAttributedStringKey.foregroundColor] = UIColor.black.withAlphaComponent(alpha)
     }
-
+    
     // Hide all possible button items and navigation items
     func shouldHideView(_ view: UIView) -> Bool {
       let className = view.classForCoder.description().replacingOccurrences(of: "_", with: "")
@@ -578,20 +590,20 @@ open class ScrollingNavigationController: UINavigationController, UIGestureRecog
       }
       return viewNames.contains(className)
     }
-
+    
     func setAlphaOfSubviews(view: UIView, alpha: CGFloat) {
       view.alpha = alpha
       view.subviews.forEach { setAlphaOfSubviews(view: $0, alpha: alpha) }
     }
-
+    
     navigationBar.subviews
       .filter(shouldHideView)
       .forEach { setAlphaOfSubviews(view: $0, alpha: alpha) }
-
+    
     // Hide the left items
     navigationItem.leftBarButtonItem?.customView?.alpha = alpha
     navigationItem.leftBarButtonItems?.forEach { $0.customView?.alpha = alpha }
-
+    
     // Hide the right items
     navigationItem.rightBarButtonItem?.customView?.alpha = alpha
     navigationItem.rightBarButtonItems?.forEach { $0.customView?.alpha = alpha }
