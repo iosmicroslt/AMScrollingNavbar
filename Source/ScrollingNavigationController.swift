@@ -440,7 +440,11 @@ open class ScrollingNavigationController: UINavigationController, UIGestureRecog
     updateNavbarAlpha()
     restoreContentOffset(scrollDelta)
     updateFollowers()
-    updateContentInset(scrollDelta)
+    
+    //****** MARK ******
+    //This method fixes contentInset issue when using floatingHeader
+    //uncomment if will use
+    //updateContentInset(scrollDelta)
     
     let newState = state
     if newState != previousState {
